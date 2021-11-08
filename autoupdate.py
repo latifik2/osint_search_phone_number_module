@@ -1,5 +1,6 @@
 
 import sqlite3, csv, datetime, requests, time
+from bs4 import BeautifulSoup
 
 startTime = time.time()
 
@@ -34,16 +35,21 @@ def writeCSV(filename):
 
 
 def dowloadDB():
-    adr1 = "https://rossvyaz.gov.ru/upload/gallery/240/63240_520cb7886da777c87fb4975821b2954cb9246b2d.csv"
-    adr2 = "https://rossvyaz.gov.ru/upload/gallery/242/63242_7b8559ff4e0a23950ef6f3b6bfdf5d638492e07b.csv"
-    adr3 = "https://rossvyaz.gov.ru/upload/gallery/244/63244_0815d272861d8562fa4dad35da1f35916a4c31ab.csv"
-    adr4 = "https://rossvyaz.gov.ru/upload/gallery/246/63246_53eb8e11fd3d75d7ac152409b3f1684374672988.csv"
+    url = "https://rossvyaz.gov.ru/about/otkrytoe-pravitelstvo/otkrytye-dannee/reestr-otkrytykh-dannykh"
+    r = requests.get(url, verify=False)
+    soup = BeautifulSoup(r.text, 'lxml')
+
+    adr = soup.find('table').find('tbody').findAll('tr')[1].findAll('td')[2].find('p').findAll('a')
+
+    records = []
+    for link in adr:
+        records.append(link.get('href'))
 
     if(datetime.datetime.today().weekday() == 0):
-        request1 = requests.get(adr1, verify=False)
-        request2 = requests.get(adr2, verify=False)
-        request3 = requests.get(adr3, verify=False)
-        request4 = requests.get(adr4, verify=False)
+        request1 = requests.get(records[0], verify=False)
+        request2 = requests.get(records[1], verify=False)
+        request3 = requests.get(records[2], verify=False)
+        request4 = requests.get(records[3], verify=False)
 
         getCSV('csvfiles/r1.csv', request1)
         getCSV('csvfiles/r2.csv', request2)
